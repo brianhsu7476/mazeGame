@@ -1,7 +1,7 @@
 var canvas=document.getElementById('mycanvas'), ctx=canvas.getContext('2d');
 var ww=window.innerWidth, wh=window.innerHeight, cnt=0, cntMove=0;
-const bw=32, bh=18, ballSize=100, ballDis=250, fps=60;
-var scale=1;
+const bw=48, bh=27, ballSize=100, ballDis=250, fps=60;
+var scale=1, isEnd=0;
 canvas.width=ww, canvas.height=wh;
 ctx.translate(ww/2, wh/2), ctx.scale(1, -1);
 
@@ -79,6 +79,7 @@ Object.assign(player0, player);
 var balls=[], maze=new Maze();
 
 function init(){
+    isEnd=0;
     for(var i=0; i<bw; ++i)for(var j=0; j<bh; ++j)balls.push(new Ball({x:i*ballDis, y:j*ballDis}));
     maze.e.forEach(edge=>{
         if(edge.v-edge.u==1)balls.push(new Ball({x:Math.floor(edge.u/bh)*ballDis, y:(edge.u%bh+edge.v%bh)/2*ballDis, r:ballSize/2}));
@@ -87,11 +88,20 @@ function init(){
     });
 }
 
+var tt=0;
+
 function draw(){
     ctx.fillStyle='rgba(0, 29, 46, 0.5)';
     ctx.fillRect(0-ww, 0-wh, (bw*ballDis+ww)*2, (bh*ballDis+wh)*2);
     balls.forEach(ball=>ball.draw());
     player.draw();
+    ctx.save(), ctx.translate(player0.x, player0.y);
+    ctx.scale(1, -1), ctx.font='30px Arial', ctx.fillStyle='white';
+    if(!isEnd)tt=Math.floor(cnt*10/fps)/10;
+    var sx=Math.round(player.x/ballDis), sy=Math.round(player.y/ballDis);
+    if(sx==bw-1&&sy==bh-1)isEnd=1;
+    ctx.fillText('x:'+sx+' y: '+sy+' time: '+tt, -ww/2+10, -wh/2+33);
+    ctx.restore();
     requestAnimationFrame(draw);
 }
 
