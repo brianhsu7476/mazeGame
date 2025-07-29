@@ -1,13 +1,14 @@
 var canvas=document.getElementById('mycanvas'), ctx=canvas.getContext('2d');
 var ww=window.innerWidth, wh=window.innerHeight, cnt=0, cntMove=0;
-const bw=16, bh=9, scale=1, ballSize=100, ballDis=250, fps=60;
+const bw=32, bh=18, ballSize=100, ballDis=250, fps=60;
+var scale=1;
 canvas.width=ww, canvas.height=wh;
 ctx.translate(ww/2, wh/2), ctx.scale(1, -1);
 
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1)); // 隨機選 j ∈ [0, i]
-        [array[i], array[j]] = [array[j], array[i]];   // 交換 array[i] 和 array[j]
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
     return array;
 }
@@ -65,8 +66,10 @@ class Ball{
         if(cnt>=cntMove){
             if(this.x+dx*ballDis<0||this.x+dx*ballDis>ballDis*(bw-1))return;
             if(this.y+dy*ballDis<0||this.y+dy*ballDis>ballDis*(bh-1))return;
-            var now=balls[this.x*bh+this.y];
-            cntMove=cnt+10, this.x+=dx*ballDis, this.y+=dy*ballDis;
+            var idx=Math.round((this.x*bh+this.y)/ballDis);
+            balls[idx].nbr.forEach(nbr=>{
+                if(nbr==idx+dx*bh+dy)cntMove=cnt+10, this.x+=dx*ballDis, this.y+=dy*ballDis;
+            });
         }
     }
 };
@@ -80,6 +83,7 @@ function init(){
     maze.e.forEach(edge=>{
         if(edge.v-edge.u==1)balls.push(new Ball({x:Math.floor(edge.u/bh)*ballDis, y:(edge.u%bh+edge.v%bh)/2*ballDis, r:ballSize/2}));
         else balls.push(new Ball({x:(Math.floor(edge.u/bh)+Math.floor(edge.v/bh))/2*ballDis, y:edge.u%bh*ballDis, r:ballSize/2}));
+        balls[edge.u].nbr.push(edge.v), balls[edge.v].nbr.push(edge.u);
     });
 }
 
@@ -98,7 +102,7 @@ function update(){
         player0.x+=(player.x-player0.x)/(cntMove-cnt);
         player0.y+=(player.y-player0.y)/(cntMove-cnt);
     }
-    ctx.translate(player2.x-player0.x, player2.y-player0.y);
+    ctx.translate((player2.x-player0.x)/scale, (player2.y-player0.y)/scale);
     ++cnt;
 }
 
